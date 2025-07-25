@@ -4,7 +4,7 @@ project('Lisp_interpreter', 'c',
 
 inc = include_directories('linenoise')
 
-executable('Lisp_interpreter',
+executable('lisp_interpreter',
            'repl.c',
            'linenoise/linenoise.c',
            include_directories : inc,
