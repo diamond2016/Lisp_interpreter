@@ -17,7 +17,7 @@ mpca_lang(MPCA_LANG_DEFAULT,
   Expr, Prod, Value, Maths, NULL);
 
 mpc_result_t r;
-char *input = "(+ 1 (- 3 2))";
+char *input = "(1 + (3 - 2))";
 if (mpc_parse("input", input, Maths, &r)) {
   mpc_ast_print(r.output);
   mpc_ast_delete(r.output);
