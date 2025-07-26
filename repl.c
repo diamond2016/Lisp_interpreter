@@ -24,10 +24,10 @@ int main(int argc, char** argv) {
 
   /* regex between \/ and with ; at end*/
   mpca_lang(MPCA_LANG_DEFAULT,
-    " number : /-?[0-9]+/; "
+    " number : /-?[0-9]+.?[0-9]*/; "
     " operator : \"add\" | \"sub\" | \"mul\" | \"div\"; "
     " expr : <number> | '(' <operator> <expr>+ ')'; "
-    " lispy : /^/ <operator> <expr>+ /$/; ",
+    " lispy : /^/ <expr>+ /$/; ",
     Number, Operator, Expr, Lispy);
 
   /* In a never ending loop */
