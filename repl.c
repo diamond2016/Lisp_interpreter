@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     " number : /-?[0-9]+/; "
     " operator : '+' | '-' | '*' | '/'; "
     " expr : <number> | '(' <operator> <expr>+ ')'; "
-    " lispy : /^/ <expr>+ /$/; ",
+    " lispy : /^/ <operator> <expr>+ /$/; ",
     Number, Operator, Expr, Lispy);
 
   /* In a never ending loop */
