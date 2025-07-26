@@ -9,4 +9,6 @@ I follow lessons on Youtube channel [esadecimale](https://www.youtube.com/@esade
 - linenoise - simple C library to read/write on terminal of antirez [linenoise](http://github.com/antirez/linenoise)
 - mpc - a micro parsing library from [orangeduck](https://github.com/orangeduck/mpc)
 
+**repl**
+contains test of parsing expressions
 
