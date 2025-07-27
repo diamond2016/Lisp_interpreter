@@ -1,14 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "linenoise/linenoise.h"
 #include "mpc/mpc.h"
 
 #define HISTORY_LEN   1024
 
-int main(int argc, char** argv) {
+int number_of_nodes(mpc_ast_t *tree) {
+  assert(tree->children_num >=0 );
+  if (tree->children_num == 0) return 1; //(1=root node)
+
+  int num_nodes = 1;
+  for (int i = 0; i < tree->children_num; i++) {
+    num_nodes += number_of_nodes(tree->children[i]);
+  }
+  return num_nodes;
+}
+
+int main(void) {
 
   /* Print Version and Exit Information */
-  puts("Lispy Version 0.0.0.0.1");
+  puts("Lispy Version 0.0.0.0.7");
   puts("Press Ctrl+c to Exit\n");
 
   if (linenoiseHistorySetMaxLen(HISTORY_LEN) == 0) {
@@ -43,6 +55,10 @@ int main(int argc, char** argv) {
     // parsing
     mpc_result_t r;
     if (mpc_parse("<stdin>", input, Lispy, &r)) {
+
+      int n = number_of_nodes(r.output);
+      printf("# nodi AST = %d\n", n);
+
       //print AST
       mpc_ast_print(r.output);
       mpc_ast_delete(r.output);

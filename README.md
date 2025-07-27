@@ -12,3 +12,7 @@ I follow lessons on Youtube channel [esadecimale](https://www.youtube.com/@esade
 **repl**
 contains test of parsing expressions
 
+**versions**
+- tag 0.3 contains a simple parser for numeric expressions
+- tag 0.7 contains evalution for parser of tag 0.3
+
