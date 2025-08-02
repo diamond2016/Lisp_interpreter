@@ -19,13 +19,14 @@ int number_of_nodes(mpc_ast_t *tree) {
 }
 
 long eval_operand(char *op, long x, long y) {
-  if (strcmp(op, "add") == 0) {
+  assert(op != NULL);
+  if (strcmp(op, "+") == 0) {
     return x + y;
-  } else if (strcmp(op, "sub") == 0) {
+  } else if (strcmp(op, "-") == 0) {
     return x - y;
-  } else if (strcmp(op, "mul") == 0) {
+  } else if (strcmp(op, "*") == 0) {
     return x * y;
-  } else if (strcmp(op, "div") == 0) {
+  } else if (strcmp(op, "/") == 0) {
     if (y == 0) {
       fprintf(stderr, "Error: Division by zero\n");
       exit(EXIT_FAILURE);
@@ -41,26 +42,25 @@ long eval (mpc_ast_t *tree) {
   assert(tree->children_num >= 0);
   assert(tree->tag != NULL);
   assert(tree->contents != NULL);
-  // if the tree is empty, return 0 
-  if (tree->children_num == 0) {
-    return 0;
-  }
 
 // if the tag is number, return the value
-  if (strcmp(tree->tag, "number") == 0) {
-     return atol(tree->contents);
+  if (strstr(tree->tag, "number") != NULL) {
+    return atol(tree->contents);
   }    
-
+  
+  // operator is always in the second child in expr or lispy
   char *op = tree->children[1]->contents;
-  long x = eval(tree->children[2]);
+  long result = eval(tree->children[2]);
   int i = 3;
 
-  while(strstr(tree->children[i]->tag, "expr") != NULL) {
-    x = eval_operand(op, x, eval(tree->children[i]));
+  // loop end with end of expression ) or input
+  while(i < tree->children_num && strstr(tree->children[i]->tag, "expr") != NULL) {
+    long tmp_val = eval(tree->children[i]);
+    result = eval_operand(op, result, tmp_val);
     i++;
   }
 
-  return x;
+  return result;
 } 
 
 int main(void) {
@@ -82,10 +82,10 @@ int main(void) {
 
   /* regex between \/ and with ; at end*/
   mpca_lang(MPCA_LANG_DEFAULT,
-    " number : /-?[0-9]+(.[0-9]+)?/; "
-    " operator : \"add\" | \"sub\" | \"mul\" | \"div\"; "
+    " number : /-?[0-9]+(.[0-9]+)?/;                "
+    " operator : '+' | '-' | '*' | '/';             "
     " expr : <number> | '(' <operator> <expr>+ ')'; "
-    " lispy : /^/ <operator> <expr>+ /$/; ",
+    " lispy : /^/ <operator> <expr>+ /$/;           ",
     Number, Operator, Expr, Lispy);
 
   /* In a never ending loop */
@@ -105,14 +105,18 @@ int main(void) {
       int n = number_of_nodes(r.output);
       printf("# nodi AST = %d\n", n);
   
-      //print input
+      //print INPUT
       printf("Input: %s\n", input);
-      //print AST
 
+      //print RESULT
+      long result = eval(r.output);
+      printf("Result: %ld\n", result);
+
+      //print AST
       printf("AST:\n");
       mpc_ast_print(r.output);
       mpc_ast_delete(r.output);
-      printf("Value of expression = %ld\n", eval(r.output));
+  
     } else {
       mpc_err_print(r.error);
       mpc_err_delete(r.error);
