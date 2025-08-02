@@ -3,13 +3,13 @@ project('Lisp_interpreter', 'c',
   default_options : ['warning_level=3'])
 
   mpc_lib = library('mpc',
-    sources: ['mpc/mpc.c'],
-    include_directories: include_directories('mpc')
+    sources: ['../mpc/mpc.c'],
+    include_directories: include_directories('../mpc')
   )
 
   linenoise_lib = library('linenoise',
-    sources: ['linenoise/linenoise.c'],
-    include_directories: include_directories('linenoise')
+    sources: ['../linenoise/linenoise.c'],
+    include_directories: include_directories('../linenoise')
   )
 
   executable('lisp_repl',

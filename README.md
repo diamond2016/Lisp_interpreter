@@ -14,5 +14,5 @@ contains test of parsing expressions
 
 **versions**
 - tag 0.3 contains a simple parser for numeric expressions
-- tag 0.7 contains evalution for parser of tag 0.3
+- tag 0.7 contains evalution for parser of tag 0.3. It contais a modified grammar which has operator as first element
 

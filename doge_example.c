@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "mpc/mpc.h"
+#include "../mpc/mpc.h"
 
 int main(int argc, char** argv) {
 

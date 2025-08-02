@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "linenoise/linenoise.h"
-#include "mpc/mpc.h"
+#include "../linenoise/linenoise.h"
+#include "../mpc/mpc.h"
 
 #define HISTORY_LEN   1024
+#define EXIT_FAILURE 1
 
 int number_of_nodes(mpc_ast_t *tree) {
   assert(tree->children_num >=0 );
@@ -16,6 +17,52 @@ int number_of_nodes(mpc_ast_t *tree) {
   }
   return num_nodes;
 }
+
+long eval_operand(long x, char *op, long y) {
+  if (strcmp(op, "add") == 0) {
+    return x + y;
+  } else if (strcmp(op, "sub") == 0) {
+    return x - y;
+  } else if (strcmp(op, "mul") == 0) {
+    return x * y;
+  } else if (strcmp(op, "div") == 0) {
+    if (y == 0) {
+      fprintf(stderr, "Error: Division by zero\n");
+      exit(EXIT_FAILURE);
+    }           
+    return x / y;
+  }   
+  fprintf(stderr, "Error: Unknown operator %s\n", op);
+  exit(EXIT_FAILURE);
+}
+
+// evaluate the expression tree
+long eval (mpc_ast_t *tree) {
+  assert(tree->children_num >= 0);
+  assert(tree->tag != NULL);
+  assert(tree->contents != NULL);
+  // if the tree is empty, return 0 
+  if (tree->children_num == 0) {
+    return 0;
+  }
+
+// if the tag is number, return the value
+  if (strcmp(tree->tag, "number") == 0) {
+     return atol(tree->contents);
+  }    
+
+  char *op = tree->children[1]->contents;
+
+  long x = eval(tree->children[2]);
+  int i = 3;
+
+  while(strstr(tree->children[i]->tag, "expr") != NULL) {
+    x = eval_operand(x, op, eval(tree->children[i]));
+    i++;
+  }
+
+  return x;
+} 
 
 int main(void) {
 
@@ -36,10 +83,10 @@ int main(void) {
 
   /* regex between \/ and with ; at end*/
   mpca_lang(MPCA_LANG_DEFAULT,
-    " number : /-?[0-9]+.?[0-9]*/; "
+    " number : /-?[0-9]+(.[0-9]+)?/; "
     " operator : \"add\" | \"sub\" | \"mul\" | \"div\"; "
     " expr : <number> | '(' <operator> <expr>+ ')'; "
-    " lispy : /^/ <expr>+ /$/; ",
+    " lispy : /^/ <operator> <expr>+ /$/; ",
     Number, Operator, Expr, Lispy);
 
   /* In a never ending loop */
@@ -58,10 +105,15 @@ int main(void) {
 
       int n = number_of_nodes(r.output);
       printf("# nodi AST = %d\n", n);
-
+  
+      //print input
+      printf("Input: %s\n", input);
       //print AST
+
+      printf("AST:\n");
       mpc_ast_print(r.output);
       mpc_ast_delete(r.output);
+      printf("Value of expression = %ld\n", eval(r.output));
     } else {
       mpc_err_print(r.error);
       mpc_err_delete(r.error);
