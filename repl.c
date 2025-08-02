@@ -18,7 +18,7 @@ int number_of_nodes(mpc_ast_t *tree) {
   return num_nodes;
 }
 
-long eval_operand(long x, char *op, long y) {
+long eval_operand(char *op, long x, long y) {
   if (strcmp(op, "add") == 0) {
     return x + y;
   } else if (strcmp(op, "sub") == 0) {
@@ -52,12 +52,11 @@ long eval (mpc_ast_t *tree) {
   }    
 
   char *op = tree->children[1]->contents;
-
   long x = eval(tree->children[2]);
   int i = 3;
 
   while(strstr(tree->children[i]->tag, "expr") != NULL) {
-    x = eval_operand(x, op, eval(tree->children[i]));
+    x = eval_operand(op, x, eval(tree->children[i]));
     i++;
   }
 
