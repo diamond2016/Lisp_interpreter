@@ -25,6 +25,7 @@ typedef struct {
   lval_err1 err;
 } lval;
 
+// helpers to create and print lvals
 lval lval_num(long x) {
   lval v;
   v.type = LVAL_NUM;
@@ -38,6 +39,27 @@ lval lval_err(lval_err1 x) {
   v.num = 0;
   v.err = x;
   return v;
+}
+
+void lval_print(lval v) {
+  switch (v.type) {
+    case LVAL_NUM:
+      printf("%li", v.num);
+      break;
+    case LVAL_ERR:
+      switch (v.err) {
+        case  LVAL_ERR_ZERO:
+          printf("Error: Division by zero");
+          break; 
+        case LERR_BAD_OP: 
+          printf("Error Bad operator");
+          break;
+        case LERR_BAD_NUM:
+          printf("Error: invalid number");
+          break;
+      }
+      break;
+  }
 }
 
 int number_of_nodes(mpc_ast_t *tree) {
