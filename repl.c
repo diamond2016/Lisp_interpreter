@@ -7,6 +7,39 @@
 #define HISTORY_LEN   1024
 #define EXIT_FAILURE 1
 
+// to manage errors in eval
+typedef enum {
+  LVAL_NUM,
+  LVAL_ERR
+} lval_type;
+
+typedef enum {
+  LVAL_ERR_ZERO, 
+  LERR_BAD_OP, 
+  LERR_BAD_NUM
+} lval_err1;
+
+typedef struct {
+  lval_type type;
+  long num;
+  lval_err1 err;
+} lval;
+
+lval lval_num(long x) {
+  lval v;
+  v.type = LVAL_NUM;
+  v.num = x;
+  v.err = 0;
+  return v;
+}
+lval lval_err(lval_err1 x) {
+  lval v;
+  v.type = LVAL_ERR;
+  v.num = 0;
+  v.err = x;
+  return v;
+}
+
 int number_of_nodes(mpc_ast_t *tree) {
   assert(tree->children_num >=0 );
   if (tree->children_num == 0) return 1; //(1=root node)
