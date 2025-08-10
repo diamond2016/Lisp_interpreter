@@ -17,12 +17,12 @@ typedef enum {
   LVAL_ERR_ZERO, 
   LERR_BAD_OP, 
   LERR_BAD_NUM
-} lval_err1;
+} lval_err_type;
 
 typedef struct {
   lval_type type;
   long num;
-  lval_err1 err;
+  lval_err_type err;
 } lval;
 
 // helpers to create and print lvals
@@ -33,29 +33,30 @@ lval lval_num(long x) {
   v.err = 0;
   return v;
 }
-lval lval_err(lval_err1 x) {
-  lval v;
-  v.type = LVAL_ERR;
-  v.num = 0;
-  v.err = x;
-  return v;
+
+lval lval_err(lval_err_type x) {
+  lval e;
+  e.type = LVAL_ERR;
+  e.num = 0;
+  e.err = x;
+  return e;
 }
 
 void lval_print(lval v) {
   switch (v.type) {
     case LVAL_NUM:
-      printf("%li", v.num);
+      printf("%li\n", v.num);
       break;
     case LVAL_ERR:
       switch (v.err) {
         case  LVAL_ERR_ZERO:
-          printf("Error: Division by zero");
+          printf("Error: Division by zero\n");
           break; 
         case LERR_BAD_OP: 
-          printf("Error Bad operator");
+          printf("Error Bad operator\n");
           break;
         case LERR_BAD_NUM:
-          printf("Error: invalid number");
+          printf("Error: invalid number\n");
           break;
       }
       break;
@@ -73,31 +74,38 @@ int number_of_nodes(mpc_ast_t *tree) {
   return num_nodes;
 }
 
-long eval_operand(char *op, long x, long y) {
+lval eval_operand(char *op, long x, long y) {
+  lval result;
+  result.type = LVAL_NUM;
   assert(op != NULL);
   if (strcmp(op, "+") == 0) {
-    return x + y;
+    result.num = x + y;
   } else if (strcmp(op, "-") == 0) {
-    return x - y;
+    result.num = x - y;
   } else if (strcmp(op, "*") == 0) {
-    return x * y;
+    result.num = x * y;
   } else if (strcmp(op, "/") == 0) {
-    if (y == 0) {
-      fprintf(stderr, "Error: Division by zero\n");
-      exit(EXIT_FAILURE);
-    }           
-    return x / y;
-  }   
-  fprintf(stderr, "Error: Unknown operator %s\n", op);
-  exit(EXIT_FAILURE);
+      if (y == 0) {
+        return lval_err(LVAL_ERR_ZERO);
+      } else {
+        result.num = x / y;
+      }
+  } else if (strcmp(op, "%") == 0) {
+      if (y == 0) {
+        return lval_err(LVAL_ERR_ZERO);
+      } else {
+        result.num = x % y;
+      } 
+    }
+  return result;
 }
 
 // evaluate the expression tree
-long eval (mpc_ast_t *tree) {
+lval eval (mpc_ast_t *tree) {
   assert(tree->children_num >= 0);
   assert(tree->tag != NULL);
   assert(tree->contents != NULL);
-  long result = 0;
+  lval result;
 
    // if the tag is lispy recurse
   if (strstr(tree->tag, ">") != 0 && tree->children_num > 0) {
@@ -107,14 +115,15 @@ long eval (mpc_ast_t *tree) {
 // if the tag is expression, and only a child return value
   if ((strstr(tree->tag, "expr") != 0) && (tree->children_num > 0)) {
       char * op = tree->children[1]->contents;
-      long result1 = eval(tree->children[2]);
-      long result2 = eval(tree->children[3]);
-      result = eval_operand(op, result1, result2);
+      lval result1 = eval(tree->children[2]);
+      lval result2 = eval(tree->children[3]);
+      result = eval_operand(op, result1.num, result2.num);
   }   
   
 // if the tag is expression, and only a child return value        
     if ((strstr(tree->tag, "number") != 0) && (tree->children_num == 0)) {
-      result = strtol(tree->contents, NULL, 10);
+      result.num = strtol(tree->contents, NULL, 10);
+      result.type = LVAL_NUM;
     }
 
   return result;
@@ -165,17 +174,28 @@ int main(void) {
         //print AST and OUTPUT
       printf("AST:\n");
       mpc_ast_print(r.output);
-      long result = eval(r.output);
-      printf("Result: %ld\n", result);
-      mpc_ast_delete(r.output);
-    } else {
-      mpc_err_print(r.error);
-      mpc_err_delete(r.error);
-    }
- 
-    /* Free retrieved input */
-    linenoiseFree(input);
-  }
+      lval result = eval(r.output);
+
+      if(result.type == LVAL_ERR) {
+        lval_print(result);
+        mpc_ast_delete(r.output);
+        continue;
+      }
+      else if (result.type == LVAL_NUM) {
+        printf("Result: ");
+        lval_print(result);
+      } else {
+      /* Otherwise print the error */
+        lval_print(result);
+        mpc_err_print(r.error);
+        mpc_err_delete(r.error);
+    } // evalutaion
+  } // parsing
+
+  /* Free retrieved input */
+  linenoiseFree(input);
+} // while loop
+
   mpc_cleanup(4, Number, Operator, Expr, Lispy);
   return 0;
 }

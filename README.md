@@ -15,4 +15,5 @@ contains test of parsing expressions
 **versions**
 - tag 0.3 contains a simple parser for numeric expressions
 - tag 0.4 contains evalution for parser of tag 0.3 It contains a modified grammar which has one number or binary expressions
+- tag 0.5 contains manage of errors (lval)
 
